@@ -7,12 +7,39 @@
 
 <body>
   <h1>Rock Paper Scissors</h1>
-  <button type='button'>Rock</button>
-  <button type='button'>Paper</button>
-  <button type='button'>Scissors</button>
+  <div id='createJoinGame'>
+    <button 
+      id='createGameButton' 
+      type='button' 
+      onClick=createGame()>
+      Create Game
+    </button>
+    <button 
+      id='joinGameButton' 
+      type='button'
+      onClick=joinGame()>
+      Join Game
+    </button> 
+  </div>
+  <h2 id='roomIDNotification'></h2>
+  <h2 id='playerJoinNotification'></h2>
+  <div id='controls'>
+    <h1>Make your choice</h2>
+    <button id='rock-button' type='button'>Rock</button>
+    <button id='paper-button' type='button'>Paper</button>
+    <button id='scissors-button' type='button'>Scissors</button>
+    <li>
+    <button
+      id='leaveGameButton'
+      type='button'
+      onclick=leaveGame()>
+      Leave Game
+    </button>
+  </div>
+
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="/javascripts/client.js"></script>
+  <script src="/javascripts/index.js"></script>
 </body>
 
 </html>
