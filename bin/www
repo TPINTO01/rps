@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-var room = require('../room');
+var game = require('../game');
 var socketio = require('socket.io');
 var app = require('../app');
 var debug = require('debug')('rps-server:server');
@@ -28,7 +28,7 @@ var io = socketio(server, {
     methods: ['GET', 'POST']
   }
 });
-room(io);
+game(io);
 
 /**
  * Listen on provided port, on all network interfaces.
