@@ -1,66 +1,82 @@
 const socket = io();
 
-const roomIDNotification = document.getElementById('roomIDNotification');
-const playerJoinNotification = document.getElementById('playerJoinNotification');
+
+const roomStatus= document.getElementById('roomStatus');
+const playerStatus = document.getElementById('playerStatus');
 const createJoinGame = document.getElementById('createJoinGame');
 const controls = document.getElementById('controls');
+const leaveRoomButton = document.getElementById('leaveRoomButton');
 
-/*
-const rockButton = document.getElementById('rock-button');
-const paperButton = document.getElementById('paper-button');
-const scissorsButton= document.getElementById('scissors-button');
-*/
 
-controls.style.display = 'none';
-roomIDNotification.style.display = 'none';
-playerJoinNotification.style.display = 'none';
+controls.style.display        = 'none';
+roomStatus.style.display      = 'none';
+playerStatus.style.display    = 'none';
+leaveRoomButton.style.display = 'none';
+
 
 var roomID = null;
 
+
+// Events
+
+socket.on('newRoom', (room) => {
+  createJoinGame.style.display  = 'none';
+  roomStatus.style.display      = 'block';
+  playerStatus.style.display    = 'block';
+  leaveRoomButton.style.display = 'block';
+
+  roomID = room;
+  document.querySelector('#roomStatus').innerText = "Room ID : " + room;
+  document.querySelector('#playerStatus').innerText = "Waiting for player";
+});
+
+socket.on('playerJoin', (playerName, room) => {
+  createJoinGame.style.display  = 'none';
+  roomStatus.style.display      = 'block';
+  playerStatus.style.display    = 'block';
+  leaveRoomButton.style.display = 'block';
+  controls.style.display        = 'block';
+
+  document.querySelector('#roomStatus').innerText = "Room ID: " + room; 
+  document.querySelector('#playerStatus').innerText = playerName + " joined room, ready to make choice"; 
+});
+
+socket.on('playerLeave', (playerName) => {
+  document.querySelector('#playerStatus').innerText = playerName + " left room, waiting for player";
+  controls.style.display = 'none';
+});
+
+socket.on('failToJoin', (message) => {
+  const playerName = 'Anon';
+  roomID = prompt(message);
+  if (roomID != null) {
+    socket.emit('joinGame', playerName, roomID);
+  } 
+});
+
+
+// Functions
+
 function createGame() {
   const playerName = 'Anon';
-  console.log('create_game');
-  socket.emit('createGame', {name:playerName});
+  socket.emit('createRoom', playerName);
 }
 
 function joinGame() {
   const playerName = 'Anon';
   roomID = prompt("Enter room #");
   if (roomID != null) {
-    socket.emit('joinGame', {name:playerName}, roomID);
+    socket.emit('joinRoom', playerName, roomID);
   }
 }
  
 function leaveGame() {
+  createJoinGame.style.display  = 'block';
+  controls.style.display        = 'none';
+  roomStatus.style.display      = 'none';
+  playerStatus.style.display    = 'none';
+  leaveRoomButton.style.display = 'none';
+
   const playerName = 'Anon';
-  createJoinGame.style.display = 'block';
-  controls.style.display = 'none';
-  roomIDNotification.style.display = 'none';
-  playerJoinNotification.style.display = 'none';
-  console.log('Current Room ID is ' + roomID);
-  socket.emit('leaveGame', {name:playerName}, roomID);
+  socket.emit('leaveRoom', playerName, roomID);
 }
-
-socket.on('newGame', (data) => {
-  console.log('Heard back from server, created room with ID ' + data.roomID);
-  roomID = data.roomID;
-  roomIDNotification.style.display = 'block';
-  document.querySelector('#roomIDNotification').innerText = 'Game created with room ID ' + data.roomID;
-});
-
-socket.on('playerJoin', (name) => {
-  console.log(name + " joined room");
-  document.querySelector('#playerJoinNotification').innerText = name + " joined room, ready to make choice"; 
-  createJoinGame.style.display = 'none';
-  playerJoinNotification.style.display = 'block';
-  controls.style.display = 'block';
-});
-
-socket.on('noRoom', () => {
-  const playerName = 'Anon';
-  console.log('No room found');
-  roomID = prompt("No room was found with that ID - try Again");
-  if (roomID != null) {
-    socket.emit('joinGame', {name:playerName}, roomID);
-  } 
-});

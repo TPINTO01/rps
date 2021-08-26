@@ -9,56 +9,64 @@ class Connection {
     this.io = io;
 
 
-    socket.on('createGame', (data) => this.createGame(data));
-    socket.on('joinGame', (data, roomID) => this.joinGame(data, roomID));
-    socket.on('leaveGame', (data, roomID) => this.leaveGame(data, roomID));
+    socket.on('createRoom', (playerName) => this.createRoom(playerName));
+    socket.on('joinRoom', (playerName, roomID) => this.joinRoom(playerName, roomID));
+    socket.on('leaveRoom', (playerName, roomID) => this.leaveRoom(playerName, roomID));
     socket.on('disconnect', () => this.disconnect());
-
-    /*
     socket.on('connect_error', (err) => {
       console.log(`connect_eror due to ${err.message}`);
     });
-
-    */
   }
 
-  createGame(data) {
+
+  // Event functions
+
+  createRoom(playerName) {
     const roomID = uuidv4();
+    players[roomID] = [playerName];
     this.socket.join(roomID);
-    players[roomID] = [data.name];
-    console.log('Game created in room ' + roomID);
-    this.io.sockets.to(roomID).emit('newGame', {roomID:roomID});    
-    console.log(players[roomID]);
+    this.io.sockets.to(roomID).emit('newRoom', roomID);    
   }
   
-  joinGame(data, roomID) {
-    if (roomID in players) {
-      this.socket.join(roomID);
-      players[roomID].push(data.name);
-      console.log('Anon joined room ' + roomID);
-      console.log(roomID);
-      console.log(players[roomID]);
-      this.io.sockets.to(roomID).emit('playerJoin', data.name);
+  joinRoom(playerName, roomID) {
+    var message;
+    if (roomID in players) { 
+      if (players[roomID].length < 2) {
+        players[roomID].push(playerName);
+        this.socket.join(roomID);
+        this.io.sockets.to(roomID).emit('playerJoin', playerName, roomID);
+      } else {
+        this.sendUniqueClient('failToJoin', "Room is full");
+      } 
     } else {
-      console.log('request to join room DNE');
-
-      const noRoom = uuidv4();
-      this.socket.join(noRoom)
-      this.io.sockets.to(noRoom).emit('noRoom');
-      this.socket.leave(noRoom);
+      this.sendUniqueClient('failToJoin', "Room not found");
     }
   }
 
-  leaveGame(data, roomID) {
-    const index = players[roomID].indexOf(data.name);
-    this.socket.leave(roomID);
+  leaveRoom(playerName, roomID) {
+    const index = players[roomID].indexOf(playerName);
     if (index > -1) {
       players[roomID].splice(index, 1);
+      if (players[roomID].length == 0) {
+        delete players[roomID];
+      }
     }
+    this.socket.leave(roomID);
+    this.io.sockets.to(roomID).emit('playerLeave', playerName);
   }
 
   disconnect() {
     console.log('Client disconnected');
+  }
+
+
+  // Private functions 
+  
+  sendUniqueClient(eventName, message) {
+    const uniqueRoom = uuidv4();
+    this.socket.join(uniqueRoom)
+    this.io.sockets.to(uniqueRoom).emit(eventName, message);
+    this.socket.leave(uniqueRoom); 
   }
 
 }
