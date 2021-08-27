@@ -23,7 +23,8 @@ class Connection {
 
   createRoom(playerName) {
     const roomID = uuidv4();
-    players[roomID] = [playerName];
+    players[roomID] = [{socket : this.socket.id, name : playerName}];
+    console.log(players[roomID]);
     this.socket.join(roomID);
     this.io.sockets.to(roomID).emit('newRoom', roomID);    
   }
@@ -32,7 +33,8 @@ class Connection {
     var message;
     if (roomID in players) { 
       if (players[roomID].length < 2) {
-        players[roomID].push(playerName);
+        players[roomID].push({socket : this.socket.id, name : playerName});
+        console.log(players[roomID]);
         this.socket.join(roomID);
         this.io.sockets.to(roomID).emit('playerJoin', playerName, roomID);
       } else {
@@ -44,7 +46,10 @@ class Connection {
   }
 
   leaveRoom(playerName, roomID) {
-    const index = players[roomID].indexOf(playerName);
+    const index = players[roomID].map(function (player) { 
+      return player.socket; 
+    }).indexOf(this.socket.id);
+
     if (index > -1) {
       players[roomID].splice(index, 1);
       if (players[roomID].length == 0) {
@@ -56,7 +61,21 @@ class Connection {
   }
 
   disconnect() {
-    console.log('Client disconnected');
+    const roomID = this.getRoomIDBySocket(this.socket.id);
+    const index  = players[roomID].map(function (player) { 
+      return player.socket; 
+    }).indexOf(this.socket.id);
+
+    if (index > -1) {
+      players[roomID].splice(index, 1);
+      if (players[roomID].length == 0) {
+        delete players[roomID];
+      }
+    }
+
+    console.log(this.socket.id + " disconnected from Room " + roomID); 
+    console.log("Rooms: " + Object.keys(players));
+  
   }
 
 
@@ -67,6 +86,18 @@ class Connection {
     this.socket.join(uniqueRoom)
     this.io.sockets.to(uniqueRoom).emit(eventName, message);
     this.socket.leave(uniqueRoom); 
+  }
+
+  /* TODO: Map sockets to rooms */
+  getRoomIDBySocket(socket) {
+    console.log(Object.keys(players));
+    console.log(Object.values(players));
+
+    const roomID = Object.keys(players).find(key => players[key].map(function (player) {
+      return player.socket;
+    }) == socket);
+    console.log("getRoomIBBySocket(" + socket + ") returns " + roomID);
+    return roomID;
   }
 
 }
