@@ -2,6 +2,7 @@ const randomstring = require
 const uuidv4 = require('uuid').v4;
 
 const players = {};
+const rooms   = {};
 
 class Connection {
   constructor(io, socket) {
@@ -24,7 +25,11 @@ class Connection {
   createRoom(playerName) {
     const roomID = uuidv4();
     players[roomID] = [{socket : this.socket.id, name : playerName}];
+    rooms[this.socket.id] = roomID;
+
     console.log(players[roomID]);
+    console.log(rooms[this.socket.id]);
+
     this.socket.join(roomID);
     this.io.sockets.to(roomID).emit('newRoom', roomID);    
   }
@@ -34,7 +39,11 @@ class Connection {
     if (roomID in players) { 
       if (players[roomID].length < 2) {
         players[roomID].push({socket : this.socket.id, name : playerName});
+        rooms[this.socket.id] = roomID;
+
         console.log(players[roomID]);
+        console.log(rooms[this.socket.id]);
+
         this.socket.join(roomID);
         this.io.sockets.to(roomID).emit('playerJoin', playerName, roomID);
       } else {
@@ -55,13 +64,14 @@ class Connection {
       if (players[roomID].length == 0) {
         delete players[roomID];
       }
+      delete rooms[this.socket.id];
     }
     this.socket.leave(roomID);
     this.io.sockets.to(roomID).emit('playerLeave', playerName);
   }
 
   disconnect() {
-    const roomID = this.getRoomIDBySocket(this.socket.id);
+    const roomID = rooms[this.socket.id]; 
     const index  = players[roomID].map(function (player) { 
       return player.socket; 
     }).indexOf(this.socket.id);
@@ -71,6 +81,7 @@ class Connection {
       if (players[roomID].length == 0) {
         delete players[roomID];
       }
+      delete rooms[this.socket.id];
     }
 
     console.log(this.socket.id + " disconnected from Room " + roomID); 
@@ -88,7 +99,7 @@ class Connection {
     this.socket.leave(uniqueRoom); 
   }
 
-  /* TODO: Map sockets to rooms */
+  /*
   getRoomIDBySocket(socket) {
     console.log(Object.keys(players));
     console.log(Object.values(players));
@@ -99,6 +110,7 @@ class Connection {
     console.log("getRoomIBBySocket(" + socket + ") returns " + roomID);
     return roomID;
   }
+  */
 
 }
 
