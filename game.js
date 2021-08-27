@@ -47,10 +47,10 @@ class Connection {
         this.socket.join(roomID);
         this.io.sockets.to(roomID).emit('playerJoin', playerName, roomID);
       } else {
-        this.sendUniqueClient('failToJoin', "Room is full");
+        this.io.sockets.to(this.socket.id).emit('failToJoin', "Room is full");
       } 
     } else {
-      this.sendUniqueClient('failToJoin', "Room not found");
+      this.io.sockets.to(this.socket.id).emit('failToJoin', "Room not found");
     }
   }
 
@@ -71,27 +71,31 @@ class Connection {
   }
 
   disconnect() {
-    const roomID = rooms[this.socket.id]; 
-    const index  = players[roomID].map(function (player) { 
-      return player.socket; 
-    }).indexOf(this.socket.id);
+    if (this.socket.id in rooms) {
+      const roomID = rooms[this.socket.id]; 
+      const index  = players[roomID].map(function (player) { 
+        return player.socket; 
+      }).indexOf(this.socket.id);
 
-    if (index > -1) {
-      players[roomID].splice(index, 1);
-      if (players[roomID].length == 0) {
-        delete players[roomID];
+      if (index > -1) {
+        const playerName = players[roomID][index].name;
+        players[roomID].splice(index, 1);
+        if (players[roomID].length == 0) {
+          delete players[roomID];
+        } else {
+          this.io.sockets.to(roomID).emit('playerLeave', playerName);
+        }
+        delete rooms[this.socket.id];
       }
-      delete rooms[this.socket.id];
     }
-
-    console.log(this.socket.id + " disconnected from Room " + roomID); 
+ 
     console.log("Rooms: " + Object.keys(players));
   
   }
 
 
   // Private functions 
-  
+ /* 
   sendUniqueClient(eventName, message) {
     const uniqueRoom = uuidv4();
     this.socket.join(uniqueRoom)
@@ -99,17 +103,6 @@ class Connection {
     this.socket.leave(uniqueRoom); 
   }
 
-  /*
-  getRoomIDBySocket(socket) {
-    console.log(Object.keys(players));
-    console.log(Object.values(players));
-
-    const roomID = Object.keys(players).find(key => players[key].map(function (player) {
-      return player.socket;
-    }) == socket);
-    console.log("getRoomIBBySocket(" + socket + ") returns " + roomID);
-    return roomID;
-  }
   */
 
 }
