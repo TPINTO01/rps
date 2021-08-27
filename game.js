@@ -1,8 +1,6 @@
-const randomstring = require
-const uuidv4 = require('uuid').v4;
-
 const players = {};
 const rooms   = {};
+
 
 class Connection {
   constructor(io, socket) {
@@ -23,29 +21,24 @@ class Connection {
   // Event functions
 
   createRoom(playerName) {
-    const roomID = uuidv4();
+    const roomID = createID(6);
     players[roomID] = [{socket : this.socket.id, name : playerName}];
     rooms[this.socket.id] = roomID;
-
-    console.log(players[roomID]);
-    console.log(rooms[this.socket.id]);
 
     this.socket.join(roomID);
     this.io.sockets.to(roomID).emit('newRoom', roomID);    
   }
-  
-  joinRoom(playerName, roomID) {
-    var message;
+
+
+  joinRoom(playerName, roomID) { 
     if (roomID in players) { 
       if (players[roomID].length < 2) {
         players[roomID].push({socket : this.socket.id, name : playerName});
         rooms[this.socket.id] = roomID;
 
-        console.log(players[roomID]);
-        console.log(rooms[this.socket.id]);
-
         this.socket.join(roomID);
         this.io.sockets.to(roomID).emit('playerJoin', playerName, roomID);
+
       } else {
         this.io.sockets.to(this.socket.id).emit('failToJoin', "Room is full");
       } 
@@ -53,6 +46,7 @@ class Connection {
       this.io.sockets.to(this.socket.id).emit('failToJoin', "Room not found");
     }
   }
+
 
   leaveRoom(playerName, roomID) {
     const index = players[roomID].map(function (player) { 
@@ -69,6 +63,7 @@ class Connection {
     this.socket.leave(roomID);
     this.io.sockets.to(roomID).emit('playerLeave', playerName);
   }
+
 
   disconnect() {
     if (this.socket.id in rooms) {
@@ -87,24 +82,21 @@ class Connection {
         }
         delete rooms[this.socket.id];
       }
-    }
- 
-    console.log("Rooms: " + Object.keys(players));
-  
+    } 
   }
 
 
-  // Private functions 
- /* 
-  sendUniqueClient(eventName, message) {
-    const uniqueRoom = uuidv4();
-    this.socket.join(uniqueRoom)
-    this.io.sockets.to(uniqueRoom).emit(eventName, message);
-    this.socket.leave(uniqueRoom); 
+}
+
+
+function createID(length) {  
+  var result           = '';
+  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < length; i++ ) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
-
-  */
-
+  return result;
 }
 
 
