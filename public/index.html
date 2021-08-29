@@ -23,18 +23,19 @@
   </div>
   <h2 id='roomStatus'></h2>
   <h2 id='playerStatus'></h2>
-  <div id='controls'>
-    <h1>Make your choice</h2>
-    <button id='rock-button' type='button'>Rock</button>
-    <button id='paper-button' type='button'>Paper</button>
-    <button id='scissors-button' type='button'>Scissors</button>
-  </div>
   <button
     id='leaveRoomButton'
     type='button'
     onclick=leaveGame()>
     Leave Room
   </button>
+  <div id='controls'>
+    <h1>Make your choice</h2>
+    <button id='rock-button' type='button' onclick=choose('rock')>Rock</button>
+    <button id='paper-button' type='button' onclick=choose('paper')>Paper</button>
+    <button id='scissors-button' type='button' onclick=choose('scissors')>Scissors</button>
+  </div>
+  <h2 id='result'></h2>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/javascripts/index.js"></script>
 </body>

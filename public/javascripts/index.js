@@ -5,6 +5,7 @@ const roomStatus= document.getElementById('roomStatus');
 const playerStatus = document.getElementById('playerStatus');
 const createJoinGame = document.getElementById('createJoinGame');
 const controls = document.getElementById('controls');
+const result = document.getElementById('result');
 const leaveRoomButton = document.getElementById('leaveRoomButton');
 
 
@@ -12,9 +13,11 @@ controls.style.display        = 'none';
 roomStatus.style.display      = 'none';
 playerStatus.style.display    = 'none';
 leaveRoomButton.style.display = 'none';
+result.style.display          = 'none';
 
 
-var roomID = null;
+var roomID  = null;
+var outcome = -1;
 
 
 // Events
@@ -38,7 +41,7 @@ socket.on('playerJoin', (playerName, room) => {
   controls.style.display        = 'block';
 
   document.querySelector('#roomStatus').innerText = "Room ID: " + room; 
-  document.querySelector('#playerStatus').innerText = playerName + " joined room, ready to make choice"; 
+  document.querySelector('#playerStatus').innerText = playerName + " joined room"; 
 });
 
 socket.on('playerLeave', (playerName) => {
@@ -52,6 +55,10 @@ socket.on('failToJoin', (message) => {
   if (roomID != null) {
     socket.emit('joinGame', playerName, roomID);
   } 
+});
+
+socket.on('result', (state) => {
+  console.log(state);
 });
 
 
@@ -68,6 +75,22 @@ function joinGame() {
   if (roomID != null) {
     socket.emit('joinRoom', playerName, roomID);
   }
+}
+
+function choose(choice) {
+  controls.style.display = 'none';
+  result.style.display   = 'block';
+
+  socket.emit('choice', choice, roomID);
+
+  if (outcome == -1) {
+    resultText = "Waiting for opponent's choice";
+  } else if (outcome == 1) {
+    resultText = "You win";
+  } else {
+    resultText = "You lose";
+  }
+  document.querySelector('#result').innerText = resultText;
 }
  
 function leaveGame() {
