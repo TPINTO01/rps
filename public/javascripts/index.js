@@ -8,6 +8,9 @@ const controls = document.getElementById('controls');
 const choiceStatus = document.getElementById('choiceStatus');
 const outcomeContainer = document.getElementById('outcomeContainer');
 const leaveRoomButton = document.getElementById('leaveRoomButton');
+const playAgainButton = document.getElementById('playAgain');
+const rematchStatus = document.getElementById('rematchStatus');
+const rematchButton = document.getElementById('rematchButton');
 
 
 controls.style.display        = 'none';
@@ -15,7 +18,9 @@ roomStatus.style.display      = 'none';
 playerStatus.style.display    = 'none';
 leaveRoomButton.style.display = 'none';
 choiceStatus.style.display    = 'none';
-outcomeContainer.style.display          = 'none';
+outcomeContainer.style.display = 'none';
+rematchStatus.style.display = 'none';
+rematchButton.style.display = 'none';
 
 
 var roomID  = null;
@@ -59,17 +64,15 @@ socket.on('failToJoin', (message) => {
   } 
 });
 
-socket.on('result', (outcome) => {
+socket.on('outcome', (outcome) => {
   console.log(outcome);
   var opponentChoiceText = "";
-  var resultText   = "" 
+  var resultText         = "" 
   if (outcome.draw) {
     console.log("draw");
-    if (outcome.winner.socket == socket.id) {
-      opponentChoiceText = outcome.loser.name + " chose " + outcome.loser.choice;
-    } else {
+    (outcome.winner.socket == socket.id) ?
+      opponentChoiceText = outcome.loser.name  + " chose " + outcome.loser.choice :
       opponentChoiceText = outcome.winner.name + " chose " + outcome.winner.choice;
-    }
     resultText = "Draw";
   } else if (outcome.winner.socket == socket.id) {
     console.log("You win");
@@ -86,6 +89,20 @@ socket.on('result', (outcome) => {
   choiceStatus.style.display     = 'none';
   outcomeContainer.style.display = 'block';
  
+});
+
+socket.on('rematchRequest', (name) => {
+  document.querySelector('#rematchStatus').innerText = name + " requests a rematch";
+  rematchStatus.style.display = 'block';
+  rematchButton.style.display = 'block';
+  playAgainButton.style.display = 'none';
+});
+
+socket.on('rematch', () => {
+  rematchStatus.style.display = 'none';
+  rematchButton.style.display = 'none';
+  playAgainButton.style.display = 'block';
+  controls.style.display = 'block';
 });
 
 
@@ -105,12 +122,24 @@ function joinGame() {
 }
 
 function choose(choice) {
-  controls.style.display = 'none';
-  choiceStatus.style.display   = 'block';
+  controls.style.display     = 'none';
+  choiceStatus.style.display = 'block';
 
   socket.emit('choice', choice, roomID);
+}
 
+function playAgain() {
+  outcomeContainer.style.display = 'none';
+  rematchStatus.style.display = 'block';
+  document.querySelector('#rematchStatus').innerText = "Waiting for rematch accept";
+  socket.emit('requestRematch', roomID);
+}
 
+function acceptRematch() {
+  rematchStatus.style.display = 'none';
+  rematchButton.style.display = 'none';
+  outcomeContainer.style.display = 'none';
+  socket.emit('acceptRematch', roomID);
 }
  
 function leaveGame() {

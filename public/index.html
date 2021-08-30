@@ -39,8 +39,10 @@
   <div id='outcomeContainer'>
     <h2 id ='opponentChoice' ></h2>
     <h2 id ='result' ></h2>
-    <button id='playAgain'>Play again</button>
+    <button id='playAgain' type='button' onclick=playAgain()>Play again</button>
+    <button id='rematchButton' type='button' onclick=acceptRematch()>Accept rematch</button>
   </div>
+  <h2 id ='rematchStatus'><h2>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/javascripts/index.js"></script>
 </body>

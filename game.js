@@ -15,6 +15,8 @@ class Connection {
     socket.on('joinRoom', (playerName, roomID) => this.joinRoom(playerName, roomID));
     socket.on('leaveRoom', (playerName, roomID) => this.leaveRoom(playerName, roomID));
     socket.on('choice', (choice, roomID) => this.choice(choice, roomID));
+    socket.on('requestRematch', (roomID) => this.requestRematch(roomID));
+    socket.on('acceptRematch', (roomID) => this.acceptRematch(roomID));
     socket.on('disconnect', () => this.disconnect());
     socket.on('connect_error', (err) => {
       console.log(`connect_eror due to ${err.message}`);
@@ -74,31 +76,45 @@ class Connection {
     }).indexOf(this.socket.id);
 
     var opponentIndex = -1;
-    if (index) {
-      opponentIndex = 0; 
-    } else {
-      opponentIndex = 1;
-    }
+    index ? opponentIndex = 0 : opponentIndex = 1;
 
     players[roomID][index].choice = choice;
     console.log( players[roomID][index].name + " chose " + players[roomID][index].choice );
 
     if ( players[roomID][opponentIndex].choice != '' ) {
       const state = { p1 : { socket : players[roomID][0].socket,
-                           name   : players[roomID][0].name,
-                           choice : players[roomID][0].choice },
-                    p2 : { socket : players[roomID][1].socket,
-                           name   : players[roomID][1].name,
-                           choice : players[roomID][1].choice }
+                             name   : players[roomID][0].name,
+                             choice : players[roomID][0].choice },
+                      p2 : { socket : players[roomID][1].socket,
+                             name   : players[roomID][1].name,
+                             choice : players[roomID][1].choice }
       }
 
       const outcome = gameLogic(state);
       console.log(outcome);
 
-      this.io.sockets.to(roomID).emit('result', outcome); 
+      this.io.sockets.to(roomID).emit('outcome', outcome); 
     }
    
+  }
 
+  requestRematch(roomID) {
+    const index = players[roomID].map(function (player) { 
+      return player.socket; 
+    }).indexOf(this.socket.id);
+
+    var opponentIndex = -1;
+    index ? opponentIndex = 0 : opponentIndex = 1;
+
+    this.io.sockets.to(players[roomID][opponentIndex].socket).emit('rematchRequest', 
+                                                                  players[roomID][index].name);
+  }
+
+
+  acceptRematch(roomID) {
+    players[roomID][0].choice = '';
+    players[roomID][1].choice = '';
+    this.io.sockets.to(roomID).emit('rematch');
   }
 
 
