@@ -5,7 +5,8 @@ const roomStatus= document.getElementById('roomStatus');
 const playerStatus = document.getElementById('playerStatus');
 const createJoinGame = document.getElementById('createJoinGame');
 const controls = document.getElementById('controls');
-const result = document.getElementById('result');
+const choiceStatus = document.getElementById('choiceStatus');
+const outcomeContainer = document.getElementById('outcomeContainer');
 const leaveRoomButton = document.getElementById('leaveRoomButton');
 
 
@@ -13,11 +14,11 @@ controls.style.display        = 'none';
 roomStatus.style.display      = 'none';
 playerStatus.style.display    = 'none';
 leaveRoomButton.style.display = 'none';
-result.style.display          = 'none';
+choiceStatus.style.display    = 'none';
+outcomeContainer.style.display          = 'none';
 
 
 var roomID  = null;
-var outcome = -1;
 
 
 // Events
@@ -47,6 +48,7 @@ socket.on('playerJoin', (playerName, room) => {
 socket.on('playerLeave', (playerName) => {
   document.querySelector('#playerStatus').innerText = playerName + " left room, waiting for player";
   controls.style.display = 'none';
+  outcomeContainer.style.display  = 'none';
 });
 
 socket.on('failToJoin', (message) => {
@@ -57,8 +59,33 @@ socket.on('failToJoin', (message) => {
   } 
 });
 
-socket.on('result', (state) => {
-  console.log(state);
+socket.on('result', (outcome) => {
+  console.log(outcome);
+  var opponentChoiceText = "";
+  var resultText   = "" 
+  if (outcome.draw) {
+    console.log("draw");
+    if (outcome.winner.socket == socket.id) {
+      opponentChoiceText = outcome.loser.name + " chose " + outcome.loser.choice;
+    } else {
+      opponentChoiceText = outcome.winner.name + " chose " + outcome.winner.choice;
+    }
+    resultText = "Draw";
+  } else if (outcome.winner.socket == socket.id) {
+    console.log("You win");
+    opponentChoiceText = outcome.loser.name + " chose " + outcome.loser.choice;
+    resultText = "You win";
+  } else {
+    console.log("You lose");
+    opponentChoiceText = outcome.winner.name + " chose " + outcome.winner.choice;
+    resultText = "You lose";
+  }
+
+  document.querySelector('#opponentChoice').innerText = opponentChoiceText;
+  document.querySelector('#result').innerText = resultText;
+  choiceStatus.style.display     = 'none';
+  outcomeContainer.style.display = 'block';
+ 
 });
 
 
@@ -79,18 +106,11 @@ function joinGame() {
 
 function choose(choice) {
   controls.style.display = 'none';
-  result.style.display   = 'block';
+  choiceStatus.style.display   = 'block';
 
   socket.emit('choice', choice, roomID);
 
-  if (outcome == -1) {
-    resultText = "Waiting for opponent's choice";
-  } else if (outcome == 1) {
-    resultText = "You win";
-  } else {
-    resultText = "You lose";
-  }
-  document.querySelector('#result').innerText = resultText;
+
 }
  
 function leaveGame() {
@@ -99,6 +119,7 @@ function leaveGame() {
   roomStatus.style.display      = 'none';
   playerStatus.style.display    = 'none';
   leaveRoomButton.style.display = 'none';
+  outcomeContainer.style.display         = 'none';
 
   const playerName = 'Anon';
   socket.emit('leaveRoom', playerName, roomID);

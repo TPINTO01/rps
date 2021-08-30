@@ -35,7 +35,12 @@
     <button id='paper-button' type='button' onclick=choose('paper')>Paper</button>
     <button id='scissors-button' type='button' onclick=choose('scissors')>Scissors</button>
   </div>
-  <h2 id='result'></h2>
+  <h2 id='choiceStatus'>Waiting for opponent's choice</h2>
+  <div id='outcomeContainer'>
+    <h2 id ='opponentChoice' ></h2>
+    <h2 id ='result' ></h2>
+    <button id='playAgain'>Play again</button>
+  </div>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/javascripts/index.js"></script>
 </body>

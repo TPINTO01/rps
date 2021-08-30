@@ -1,5 +1,5 @@
 const createID = require('./utils/createID');
-
+const gameLogic = require('./utils/gameLogic');
 
 const players = {};
 const rooms   = {};
@@ -84,56 +84,18 @@ class Connection {
     console.log( players[roomID][index].name + " chose " + players[roomID][index].choice );
 
     if ( players[roomID][opponentIndex].choice != '' ) {
-      var state = { p1 : { socket : players[roomID][0].socket,
+      const state = { p1 : { socket : players[roomID][0].socket,
                            name   : players[roomID][0].name,
                            choice : players[roomID][0].choice },
                     p2 : { socket : players[roomID][1].socket,
                            name   : players[roomID][1].name,
-                           choice : players[roomID][1].choice },
-                    winner : { draw : false, socket : null, name : "" }
+                           choice : players[roomID][1].choice }
       }
 
-      if (state.p1.choice == 'rock') {
-        if (state.p2.choice == 'rock') {
-          state.winner.draw = true;
-        } else if (state.p2.choice == 'paper') {
-          state.winner.socket = state.p2.socket;
-          state.winner.name   = state.p2.name;
-        } else if (state.p2.choice == 'scissors') {
-          state.winner.socket = state.p1.socket;
-          state.winner.name   = state.p1.name; 
-        } else {
-          console.log("p2 no choice");
-        }
-      } else if (state.p1.choice == 'paper') {
-        if (state.p2.choice == 'rock') {
-          state.winner.socket = state.p1.socket;
-          state.winner.name   = state.p1.name;  
-        } else if (state.p2.choice == 'paper') {
-          state.winner.draw = true;
-        } else if (state.p2.choice == 'scissors') {
-          state.winner.socket = state.p2.socket;
-          state.winner.name   = state.p2.name; 
-        } else {
-          console.log("p2 no choice");
-        }
-      } else if (state.p1.choice == 'scissors') {
-        if (state.p2.choice == 'rock') {
-          state.winner.socket = state.p2.socket;
-          state.winner.name   = state.p2.name; 
-        } else if (state.p2.choice == 'paper') {
-          state.winner.socket = state.p1.socket;
-          state.winner.name   = state.p1.name;  
-        } else if (state.p2.choice == 'scissors') {
-          state.winner.draw = true;
-        } else {
-          console.log("p2 no choice");
-        }
-      } else {
-        console.log("p1 no choice");
-      } 
- 
-      this.io.sockets.to(roomID).emit('result', state); 
+      const outcome = gameLogic(state);
+      console.log(outcome);
+
+      this.io.sockets.to(roomID).emit('result', outcome); 
     }
    
 
