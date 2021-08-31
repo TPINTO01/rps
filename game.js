@@ -88,7 +88,6 @@ class Connection {
     index ? opponentIndex = 0 : opponentIndex = 1;
 
     players[roomID][index].choice = choice;
-    console.log( players[roomID][index].name + " chose " + players[roomID][index].choice );
 
     if ( players[roomID][opponentIndex].choice != '' ) {
       var state = { p1 : { socket : players[roomID][0].socket,
@@ -98,16 +97,12 @@ class Connection {
                     p2 : { socket : players[roomID][1].socket,
                            name   : players[roomID][1].name,
                            choice : players[roomID][1].choice,
-                           score  : players[roomID][1].score  }
-      }
+                           score  : players[roomID][1].score  } }
 
       const outcome = gameLogic(state);
+
       players[roomID][0].score = state.p1.score;
       players[roomID][1].score = state.p2.score;
-
-      console.log(outcome);
-      console.log("Score: " + players[roomID][0].score + " : " + 
-                              players[roomID][1].score);
 
       this.io.sockets.to(roomID).emit('outcome', outcome); 
     }
