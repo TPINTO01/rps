@@ -11,6 +11,7 @@ const leaveRoomButton = document.getElementById('leaveRoomButton');
 const playAgainButton = document.getElementById('playAgain');
 const rematchStatus = document.getElementById('rematchStatus');
 const rematchButton = document.getElementById('rematchButton');
+const score = document.getElementById('score');
 
 
 controls.style.display         = 'none';
@@ -21,6 +22,7 @@ choiceStatus.style.display     = 'none';
 outcomeContainer.style.display = 'none';
 rematchStatus.style.display    = 'none';
 rematchButton.style.display    = 'none';
+score.style.display            = 'none';
 
 
 var roomID  = null;
@@ -59,6 +61,7 @@ socket.on('playerLeave', (name) => {
   outcomeContainer.style.display  = 'none';
   rematchStatus.style.display     = 'none';
   rematchButton.style.display     = 'none';
+  score.style.display             = 'none';
   playAgainButton.style.display   = 'block';
 });
 
@@ -72,26 +75,42 @@ socket.on('failToJoin', (message) => {
 
 socket.on('outcome', (outcome) => { 
   var opponentChoiceText = "";
+  var opponentScoreText  = "";
+  var myScoreText        = "";
   var resultText         = "";
 
   if (outcome.draw) {
-    (outcome.winner.socket == socket.id) ?
-      opponentChoiceText = outcome.loser.name  + " chose " + outcome.loser.choice :
+    if (outcome.winner.socket == socket.id) {
+      opponentChoiceText = outcome.loser.name  + " chose " + outcome.loser.choice;
+      opponentScoreText  = outcome.loser.name  + " : " + outcome.loser.score;
+      myScoreText        = outcome.winner.name + " : " + outcome.winner.score;
+    } else { 
       opponentChoiceText = outcome.winner.name + " chose " + outcome.winner.choice;
+      opponentScoreText  = outcome.winner.name + " : " + outcome.winner.score;
+      myScoreText        = outcome.loser.name  + " : " + outcome.loser.score; 
+    }
     resultText = "Draw";
   } else if (outcome.winner.socket == socket.id) {
-    opponentChoiceText = outcome.loser.name + " chose " + outcome.loser.choice;
+    opponentChoiceText = outcome.loser.name  + " chose " + outcome.loser.choice;
+    opponentScoreText  = outcome.loser.name  + " : " + outcome.loser.score;
+    myScoreText        = outcome.winner.name + " : " + outcome.winner.score;
     resultText = "You win";
   } else {
     opponentChoiceText = outcome.winner.name + " chose " + outcome.winner.choice;
+    opponentScoreText  = outcome.winner.name + " : " + outcome.winner.score;
+    myScoreText        = outcome.loser.name  + " : " + outcome.loser.score;
+ 
     resultText = "You lose";
   }
 
   document.querySelector('#opponentChoice').innerText = opponentChoiceText;
   document.querySelector('#result').innerText         = resultText;
+  document.querySelector('#opponentScore').innerText  = opponentScoreText;
+  document.querySelector('#myScore').innerText        = myScoreText;
 
   choiceStatus.style.display     = 'none';
   outcomeContainer.style.display = 'block'; 
+  score.style.display            = 'block';
 });
 
 socket.on('rematchRequest', (name) => {
@@ -158,6 +177,7 @@ function leaveGame() {
   rematchStatus.style.display    = 'none';
   rematchButton.style.display    = 'none';
   choiceStatus.style.display     = 'none';
+  score.style.display            = 'none';
   createJoinGame.style.display   = 'block';
   playAgainButton.style.display  = 'block';
 

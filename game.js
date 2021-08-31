@@ -27,7 +27,10 @@ class Connection {
 
   createRoom(playerName) {
     const roomID = createID(6);
-    players[roomID] = [{socket : this.socket.id, name : playerName, choice : ""}];
+    players[roomID] = [{socket : this.socket.id, 
+                        name   : playerName, 
+                        choice : "", 
+                        score : 0}];
     rooms[this.socket.id] = roomID;
 
     this.socket.join(roomID);
@@ -38,7 +41,10 @@ class Connection {
   joinRoom(playerName, roomID) { 
     if (roomID in players) { 
       if (players[roomID].length < 2) {
-        players[roomID].push({socket : this.socket.id, name : playerName, choice : ""});
+        players[roomID].push({socket : this.socket.id, 
+                              name   : playerName, 
+                              choice : "", 
+                              score : 0});
         rooms[this.socket.id] = roomID;
 
         this.socket.join(roomID);
@@ -64,6 +70,7 @@ class Connection {
         delete players[roomID];
       } else {
         players[roomID][0].choice = '';
+        players[roomID][0].score  = 0;
       }
       delete rooms[this.socket.id];
     }
@@ -84,16 +91,23 @@ class Connection {
     console.log( players[roomID][index].name + " chose " + players[roomID][index].choice );
 
     if ( players[roomID][opponentIndex].choice != '' ) {
-      const state = { p1 : { socket : players[roomID][0].socket,
-                             name   : players[roomID][0].name,
-                             choice : players[roomID][0].choice },
-                      p2 : { socket : players[roomID][1].socket,
-                             name   : players[roomID][1].name,
-                             choice : players[roomID][1].choice }
+      var state = { p1 : { socket : players[roomID][0].socket,
+                           name   : players[roomID][0].name,
+                           choice : players[roomID][0].choice,
+                           score  : players[roomID][0].score  },
+                    p2 : { socket : players[roomID][1].socket,
+                           name   : players[roomID][1].name,
+                           choice : players[roomID][1].choice,
+                           score  : players[roomID][1].score  }
       }
 
       const outcome = gameLogic(state);
+      players[roomID][0].score = state.p1.score;
+      players[roomID][1].score = state.p2.score;
+
       console.log(outcome);
+      console.log("Score: " + players[roomID][0].score + " : " + 
+                              players[roomID][1].score);
 
       this.io.sockets.to(roomID).emit('outcome', outcome); 
     }
@@ -134,6 +148,7 @@ class Connection {
           delete players[roomID];
         } else {
           players[roomID][0].choice = '';
+          players[roomID][0].score  = 0;
           this.io.sockets.to(roomID).emit('playerLeave', playerName);
         }
         delete rooms[this.socket.id];
