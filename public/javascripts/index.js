@@ -13,14 +13,14 @@ const rematchStatus = document.getElementById('rematchStatus');
 const rematchButton = document.getElementById('rematchButton');
 
 
-controls.style.display        = 'none';
-roomStatus.style.display      = 'none';
-playerStatus.style.display    = 'none';
-leaveRoomButton.style.display = 'none';
-choiceStatus.style.display    = 'none';
+controls.style.display         = 'none';
+roomStatus.style.display       = 'none';
+playerStatus.style.display     = 'none';
+leaveRoomButton.style.display  = 'none';
+choiceStatus.style.display     = 'none';
 outcomeContainer.style.display = 'none';
-rematchStatus.style.display = 'none';
-rematchButton.style.display = 'none';
+rematchStatus.style.display    = 'none';
+rematchButton.style.display    = 'none';
 
 
 var roomID  = null;
@@ -29,31 +29,37 @@ var roomID  = null;
 // Events
 
 socket.on('newRoom', (room) => {
+  roomID = room;
+
+  document.querySelector('#roomStatus').innerText = "Room ID : " + room;
+  document.querySelector('#playerStatus').innerText = "Waiting for player";
+
   createJoinGame.style.display  = 'none';
   roomStatus.style.display      = 'block';
   playerStatus.style.display    = 'block';
-  leaveRoomButton.style.display = 'block';
-
-  roomID = room;
-  document.querySelector('#roomStatus').innerText = "Room ID : " + room;
-  document.querySelector('#playerStatus').innerText = "Waiting for player";
-});
+  leaveRoomButton.style.display = 'block'; 
+}); 
 
 socket.on('playerJoin', (playerName, room) => {
+  document.querySelector('#roomStatus').innerText = "Room ID: " + room; 
+  document.querySelector('#playerStatus').innerText = playerName + " joined room"; 
+
   createJoinGame.style.display  = 'none';
   roomStatus.style.display      = 'block';
   playerStatus.style.display    = 'block';
   leaveRoomButton.style.display = 'block';
   controls.style.display        = 'block';
-
-  document.querySelector('#roomStatus').innerText = "Room ID: " + room; 
-  document.querySelector('#playerStatus').innerText = playerName + " joined room"; 
 });
 
-socket.on('playerLeave', (playerName) => {
-  document.querySelector('#playerStatus').innerText = playerName + " left room, waiting for player";
-  controls.style.display = 'none';
+socket.on('playerLeave', (name) => {
+  document.querySelector('#playerStatus').innerText = name + " left room, waiting for player";
+
+  choiceStatus.style.display      = 'none';
+  controls.style.display          = 'none';
   outcomeContainer.style.display  = 'none';
+  rematchStatus.style.display     = 'none';
+  rematchButton.style.display     = 'none';
+  playAgainButton.style.display   = 'block';
 });
 
 socket.on('failToJoin', (message) => {
@@ -64,45 +70,43 @@ socket.on('failToJoin', (message) => {
   } 
 });
 
-socket.on('outcome', (outcome) => {
-  console.log(outcome);
+socket.on('outcome', (outcome) => { 
   var opponentChoiceText = "";
-  var resultText         = "" 
+  var resultText         = "";
+
   if (outcome.draw) {
-    console.log("draw");
     (outcome.winner.socket == socket.id) ?
       opponentChoiceText = outcome.loser.name  + " chose " + outcome.loser.choice :
       opponentChoiceText = outcome.winner.name + " chose " + outcome.winner.choice;
     resultText = "Draw";
   } else if (outcome.winner.socket == socket.id) {
-    console.log("You win");
     opponentChoiceText = outcome.loser.name + " chose " + outcome.loser.choice;
     resultText = "You win";
   } else {
-    console.log("You lose");
     opponentChoiceText = outcome.winner.name + " chose " + outcome.winner.choice;
     resultText = "You lose";
   }
 
   document.querySelector('#opponentChoice').innerText = opponentChoiceText;
-  document.querySelector('#result').innerText = resultText;
+  document.querySelector('#result').innerText         = resultText;
+
   choiceStatus.style.display     = 'none';
-  outcomeContainer.style.display = 'block';
- 
+  outcomeContainer.style.display = 'block'; 
 });
 
 socket.on('rematchRequest', (name) => {
   document.querySelector('#rematchStatus').innerText = name + " requests a rematch";
-  rematchStatus.style.display = 'block';
-  rematchButton.style.display = 'block';
+
   playAgainButton.style.display = 'none';
+  rematchStatus.style.display   = 'block';
+  rematchButton.style.display   = 'block';
 });
 
 socket.on('rematch', () => {
-  rematchStatus.style.display = 'none';
-  rematchButton.style.display = 'none';
+  rematchStatus.style.display   = 'none';
+  rematchButton.style.display   = 'none';
   playAgainButton.style.display = 'block';
-  controls.style.display = 'block';
+  controls.style.display        = 'block';
 });
 
 
@@ -129,26 +133,33 @@ function choose(choice) {
 }
 
 function playAgain() {
-  outcomeContainer.style.display = 'none';
-  rematchStatus.style.display = 'block';
   document.querySelector('#rematchStatus').innerText = "Waiting for rematch accept";
+
+  outcomeContainer.style.display = 'none';
+  rematchStatus.style.display    = 'block';
+
   socket.emit('requestRematch', roomID);
 }
 
 function acceptRematch() {
-  rematchStatus.style.display = 'none';
-  rematchButton.style.display = 'none';
+  rematchStatus.style.display    = 'none';
+  rematchButton.style.display    = 'none';
   outcomeContainer.style.display = 'none';
+
   socket.emit('acceptRematch', roomID);
 }
  
 function leaveGame() {
-  createJoinGame.style.display  = 'block';
-  controls.style.display        = 'none';
-  roomStatus.style.display      = 'none';
-  playerStatus.style.display    = 'none';
-  leaveRoomButton.style.display = 'none';
-  outcomeContainer.style.display         = 'none';
+  controls.style.display         = 'none';
+  roomStatus.style.display       = 'none';
+  playerStatus.style.display     = 'none';
+  leaveRoomButton.style.display  = 'none';
+  outcomeContainer.style.display = 'none';
+  rematchStatus.style.display    = 'none';
+  rematchButton.style.display    = 'none';
+  choiceStatus.style.display     = 'none';
+  createJoinGame.style.display   = 'block';
+  playAgainButton.style.display  = 'block';
 
   const playerName = 'Anon';
   socket.emit('leaveRoom', playerName, roomID);

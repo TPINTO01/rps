@@ -62,6 +62,8 @@ class Connection {
       players[roomID].splice(index, 1);
       if (players[roomID].length == 0) {
         delete players[roomID];
+      } else {
+        players[roomID][0].choice = '';
       }
       delete rooms[this.socket.id];
     }
@@ -131,6 +133,7 @@ class Connection {
         if (players[roomID].length == 0) {
           delete players[roomID];
         } else {
+          players[roomID][0].choice = '';
           this.io.sockets.to(roomID).emit('playerLeave', playerName);
         }
         delete rooms[this.socket.id];
