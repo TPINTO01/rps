@@ -13,6 +13,8 @@ const rematchStatus = document.getElementById('rematchStatus');
 const rematchButton = document.getElementById('rematchButton');
 const score = document.getElementById('score');
 const gameContainer = document.getElementById('gameContainer');
+const chatMessages = document.getElementById('chatMessages');
+const chatForm = document.getElementById('chatForm');
 
 controls.style.display         = 'none';
 roomStatus.style.display       = 'none';
@@ -54,6 +56,7 @@ socket.on('playerJoin', (playerName, room) => {
   leaveRoomButton.style.display = 'block';
   controls.style.display        = 'block';
   gameContainer.style.display   = 'block';
+  chatContainer.style.display   = 'inline';
 });
 
 socket.on('playerLeave', (name) => {
@@ -67,7 +70,9 @@ socket.on('playerLeave', (name) => {
   score.style.display             = 'none';
   gameContainer.style.display     = 'none';
   playAgainButton.style.display   = 'none';
+  chatContainer.style.display     = 'none';
 
+  deleteMessages();
 });
 
 socket.on('failToJoin', (message) => {
@@ -134,6 +139,33 @@ socket.on('rematch', () => {
 });
 
 
+
+// Chatbox
+
+chatForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  let msg = e.target.elements.msg.value
+
+  msg = msg.trim();
+
+  if (!msg) {
+    return false;
+  }
+
+  socket.emit('chatMessage', 'anon', roomID, msg);
+
+  e.target.elements.msg.value = '';
+  e.target.elements.msg.focus();
+});
+
+socket.on('message', (message) => {
+  outputMessage(message);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+
+
 // Functions
 
 function createGame() {
@@ -186,8 +218,36 @@ function leaveGame() {
   score.style.display            = 'none';
   gameContainer.style.display    = 'none';
   playAgainButton.style.display  = 'none';
+  chatContainer.style.display    = 'none';
   createJoinGame.style.display   = 'block';
 
+  deleteMessages();
   const playerName = 'Anon';
   socket.emit('leaveRoom', playerName, roomID);
+}
+
+// Output message to DOM
+function outputMessage(message) {
+  console.log(message);
+  const div = document.createElement('div');
+  div.classList.add('message');
+  const p = document.createElement('p');
+  p.classList.add('meta');
+  p.innerText = message.username;
+  p.innerHTML += `<span>${message.time}</span>`;
+  div.appendChild(p);
+  const para = document.createElement('p');
+  para.classList.add('text');
+  para.innerText = message.text;
+  div.appendChild(para);
+  document.querySelector('#chatMessages').appendChild(div);
+}
+
+function deleteMessages() {
+  messages = chatMessages.getElementsByTagName('*');
+  
+  var i, e;
+  for (i = messages.length - 1; i >= 0; --i) {
+    messages[i].remove();
+  }
 }

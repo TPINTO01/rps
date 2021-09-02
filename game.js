@@ -1,5 +1,7 @@
+const moment = require('moment');
 const createID = require('./utils/createID');
 const gameLogic = require('./utils/gameLogic');
+const formatMessage  = require('./utils/messages');
 
 const players = {};
 const rooms   = {};
@@ -17,6 +19,9 @@ class Connection {
     socket.on('choice', (choice, roomID) => this.choice(choice, roomID));
     socket.on('requestRematch', (roomID) => this.requestRematch(roomID));
     socket.on('acceptRematch', (roomID) => this.acceptRematch(roomID));
+
+    socket.on('chatMessage', (name, roomID, msg) => this.chatMessage(name, roomID, msg));
+
     socket.on('disconnect', () => this.disconnect());
     socket.on('connect_error', (err) => {
       console.log(`connect_eror due to ${err.message}`);
@@ -126,6 +131,17 @@ class Connection {
     players[roomID][0].choice = '';
     players[roomID][1].choice = '';
     this.io.sockets.to(roomID).emit('rematch');
+  }
+
+
+  chatMessage(name, roomID, msg) { 
+    const message = {
+      text : msg,
+      username : name,
+      time : moment().format('h:mm a')
+    }
+    this.io.sockets.to(roomID).emit('message', formatMessage(message.username + ' ', msg, message.time));
+
   }
 
 
