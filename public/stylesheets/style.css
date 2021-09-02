@@ -3,6 +3,44 @@ body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
+.container {
+  float: left;
+  display: inline;
+  width: 45%;
+}
+
+#roomContainer {
+  width: 100%;
+  overflow: auto;
+  border: 1px solid steelblue;
+  padding: 30px;
+  border-radius: 5px;  
+}
+
+
+#gameContainer {
+  text-align: center;
+  display: none;
+  width: 100%;
+  overflow: auto;
+  border: 1px solid steelblue;
+  padding: 30px;
+  border-radius: 5px;  
+}
+
+#chatContainer {
+  float: right;
+  display: none;
+  width: 40%;
+
+  border: 1px solid steelblue;
+  border-radius: 5px;  
+}
+
+#playAgainButton, #rematchButton{
+  margin: 0 auto;
+}
+
 a {
   color: #00B7FF;
 }

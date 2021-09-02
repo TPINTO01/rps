@@ -7,48 +7,55 @@
 
 <body>
   <h1>Rock Paper Scissors</h1>
-  <div id='createJoinGame'>
-    <button 
-      id='createGameButton' 
-      type='button' 
-      onClick=createGame()>
-      Create Game
-    </button>
-    <button 
-      id='joinGameButton' 
-      type='button'
-      onClick=joinGame()>
-      Join Game
-    </button> 
+  <div class='container'>
+    <div id='roomContainer'>
+      <div id='createJoinGame'>
+        <button 
+          id='createGameButton' 
+          type='button' 
+          onClick=createGame()>
+          Create Game
+        </button>
+        <button 
+          id='joinGameButton' 
+          type='button'
+          onClick=joinGame()>
+          Join Game
+        </button> 
+      </div>
+      <h2 id='roomStatus'></h2>
+      <h2 id='playerStatus'></h2>
+      <button
+        id='leaveRoomButton'
+        type='button'
+        onclick=leaveGame()>
+        Leave Room
+      </button>
+    </div>
+    <div id='gameContainer'>
+      <div id='controls'>
+        <h1>Make your choice</h2>
+        <button id='rock-button' type='button' onclick=choose('rock')>Rock</button>
+        <button id='paper-button' type='button' onclick=choose('paper')>Paper</button>
+        <button id='scissors-button' type='button' onclick=choose('scissors')>Scissors</button>
+      </div>
+      <h2 id='choiceStatus'>Waiting for opponent's choice</h2>
+      <div id='outcomeContainer'>
+        <h2 id ='opponentChoice' ></h2>
+        <h1 id ='result' ></h2>
+      </div>
+      <div id = 'score' >
+        <h2 id= 'opponentScore'></h2>
+        <h2 id= 'myScore'></h2>
+      </div>
+      <h2 id ='rematchStatus'><h2>
+      <button id='playAgainButton' type='button' onclick=playAgain()>Play again</button>
+      <button id='rematchButton' type='button' onclick=acceptRematch()>Accept rematch</button> 
+    </div>
   </div>
-  <h2 id='roomStatus'></h2>
-  <h2 id='playerStatus'></h2>
-  <button
-    id='leaveRoomButton'
-    type='button'
-    onclick=leaveGame()>
-    Leave Room
-  </button>
-  <div id='controls'>
-    <h1>Make your choice</h2>
-    <button id='rock-button' type='button' onclick=choose('rock')>Rock</button>
-    <button id='paper-button' type='button' onclick=choose('paper')>Paper</button>
-    <button id='scissors-button' type='button' onclick=choose('scissors')>Scissors</button>
+  <div id='chatContainer'>
   </div>
-  <h2 id='choiceStatus'>Waiting for opponent's choice</h2>
-  <div id='outcomeContainer'>
-    <h2 id ='opponentChoice' ></h2>
-    <h2 id ='result' ></h2>
-    <button id='playAgain' type='button' onclick=playAgain()>Play again</button>
-    <button id='rematchButton' type='button' onclick=acceptRematch()>Accept rematch</button>
-  </div>
-  <div id = 'score' >
-    <h2 id= 'opponentScore'></h2>
-    <h2 id= 'myScore'></h2>
-  </div>
- 
 
-  <h2 id ='rematchStatus'><h2>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/javascripts/index.js"></script>
 </body>
