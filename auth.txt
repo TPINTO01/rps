@@ -1,0 +1,6 @@
+domain: 
+dev-r3jy9do6.us.auth0.com
+
+clientID:
+ALmgH5zcz4YqD2kBjETZeMrIM8YnAag8
+

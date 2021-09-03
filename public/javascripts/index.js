@@ -84,10 +84,10 @@ socket.on('failToJoin', (message) => {
 });
 
 socket.on('outcome', (outcome) => { 
-  var opponentChoiceText = "";
-  var opponentScoreText  = "";
-  var myScoreText        = "";
-  var resultText         = "";
+  var opponentChoiceText;
+  var opponentScoreText; 
+  var myScoreText; 
+  var resultText;     
 
   if (outcome.draw) {
     if (outcome.winner.socket == socket.id) {
@@ -137,7 +137,6 @@ socket.on('rematch', () => {
   rematchButton.style.display   = 'none';
   controls.style.display        = 'block';
 });
-
 
 
 // Chatbox

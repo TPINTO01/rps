@@ -19,9 +19,7 @@ class Connection {
     socket.on('choice', (choice, roomID) => this.choice(choice, roomID));
     socket.on('requestRematch', (roomID) => this.requestRematch(roomID));
     socket.on('acceptRematch', (roomID) => this.acceptRematch(roomID));
-
     socket.on('chatMessage', (name, roomID, msg) => this.chatMessage(name, roomID, msg));
-
     socket.on('disconnect', () => this.disconnect());
     socket.on('connect_error', (err) => {
       console.log(`connect_eror due to ${err.message}`);
@@ -89,7 +87,7 @@ class Connection {
       return player.socket; 
     }).indexOf(this.socket.id);
 
-    var opponentIndex = -1;
+    var opponentIndex;
     index ? opponentIndex = 0 : opponentIndex = 1;
 
     players[roomID][index].choice = choice;
@@ -102,7 +100,8 @@ class Connection {
                     p2 : { socket : players[roomID][1].socket,
                            name   : players[roomID][1].name,
                            choice : players[roomID][1].choice,
-                           score  : players[roomID][1].score  } }
+                           score  : players[roomID][1].score  } 
+      }
 
       const outcome = gameLogic(state);
 
@@ -110,9 +109,9 @@ class Connection {
       players[roomID][1].score = state.p2.score;
 
       this.io.sockets.to(roomID).emit('outcome', outcome); 
-    }
-   
+    } 
   }
+
 
   requestRematch(roomID) {
     const index = players[roomID].map(function (player) { 
@@ -141,7 +140,6 @@ class Connection {
       time : moment().format('h:mm a')
     }
     this.io.sockets.to(roomID).emit('message', formatMessage(message.username + ' ', msg, message.time));
-
   }
 
 
@@ -164,12 +162,12 @@ class Connection {
         }
         delete rooms[this.socket.id];
       }
-
     } 
   }
 
 
 }
+
 
 
 function game(io) {
